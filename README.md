@@ -25,10 +25,6 @@ A distributed IoT classroom management system for a university teaching building
                     MQTT Sub     MQTT Sub
 ```
 
-# Code Architecture - V1
-
-<img width="1358" height="1258" alt="image" src="https://github.com/user-attachments/assets/6e3a18f3-21c0-4678-a4ea-5d5c1bd628bd" />
-
 ### Master Pi
 - Admin-only Flask web interface (port 5003)
 - ZMQ socket server (port 5050) handles all business logic
