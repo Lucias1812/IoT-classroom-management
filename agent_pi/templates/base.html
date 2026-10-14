@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Agent Pi{% endblock %}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      min-height: 100vh;
+      background: #161b22;
+      border-right: 1px solid #30363d;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 0;
+      flex-shrink: 0;
+    }
+
+    .sidebar .brand {
+      padding: 0 1.25rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #58a6ff;
+      border-bottom: 1px solid #30363d;
+      margin-bottom: 1rem;
+    }
+
+    .sidebar .brand span {
+      display: block;
+      font-size: 0.7rem;
+      color: #8b949e;
+      font-weight: 400;
+      margin-top: 0.2rem;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.65rem 1.25rem;
+      color: #8b949e;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      background: #21262d;
+      color: #e6edf3;
+    }
+
+    .sidebar .logout {
+      margin-top: auto;
+      border-top: 1px solid #30363d;
+      padding-top: 1rem;
+    }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      padding: 1rem 2rem;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .topbar h1 { font-size: 1.2rem; font-weight: 600; }
+    .topbar .user { font-size: 0.85rem; color: #8b949e; }
+
+    .content { padding: 2rem; flex: 1; }
+
+    /* ── Cards ── */
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #8b949e;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Forms ── */
+    .form-group { margin-bottom: 1rem; }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #8b949e;
+      margin-bottom: 0.35rem;
+    }
+
+    input[type=text], input[type=email], input[type=password],
+    input[type=date], input[type=time], input[type=number],
+    select, textarea {
+      width: 100%;
+      padding: 0.55rem 0.8rem;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #e6edf3;
+      font-size: 0.9rem;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #58a6ff;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-block;
+      padding: 0.45rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #238636; color: #fff; }
+    .btn-danger  { background: #b91c1c; color: #fff; }
+    .btn-blue    { background: #1f6feb; color: #fff; }
+    .btn-grey    { background: #21262d; color: #e6edf3; }
+
+    /* ── Alerts ── */
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .alert-error   { background: #3d0a0a; color: #f85149; border: 1px solid #f85149; }
+    .alert-success { background: #1a4731; color: #3fb950; border: 1px solid #3fb950; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-active    { background: #1a4731; color: #3fb950; }
+    .badge-completed { background: #21262d; color: #8b949e; }
+    .badge-cancelled { background: #3d0a0a; color: #f85149; }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+
+    thead th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      background: #21262d;
+      color: #8b949e;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #30363d;
+    }
+
+    tbody tr { border-bottom: 1px solid #21262d; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #1c2128; }
+    tbody td { padding: 0.75rem 1rem; vertical-align: middle; }
+
+    /* ── Token display ── */
+    .token-box {
+      background: #0d1117;
+      border: 1px solid #1f6feb;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      font-family: monospace;
+      font-size: 1.1rem;
+      color: #58a6ff;
+      letter-spacing: 0.05em;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+{% if session.get('user_id') %}
+<nav class="sidebar">
+  <div class="brand">
+    🎓 Agent Pi
+    <span>{{ session.get('full_name', '') }}</span>
+  </div>
+  <a href="/dashboard"   {% if request.path == '/dashboard'  %}class="active"{% endif %}>🏠 Dashboard</a>
+  <a href="/search"      {% if request.path == '/search'     %}class="active"{% endif %}>🔍 Search Rooms</a>
+  <a href="/mybookings"  {% if '/booking' in request.path    %}class="active"{% endif %}>📅 My Bookings</a>
+  <a href="/fault"       {% if request.path == '/fault'      %}class="active"{% endif %}>⚠️  Report Fault</a>
+  <div class="logout">
+    <a href="/logout">🚪 Logout</a>
+  </div>
+</nav>
+{% endif %}
+
+<div class="main">
+  {% if session.get('user_id') %}
+  <div class="topbar">
+    <h1>{% block heading %}{% endblock %}</h1>
+    <span class="user">👤 {{ session.get('full_name', '') }}</span>
+  </div>
+  {% endif %}
+
+  <div class="content">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+</body>
+</html>

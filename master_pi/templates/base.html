@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Admin{% endblock %} | Master Pi</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      min-height: 100vh;
+      background: #161b22;
+      border-right: 1px solid #30363d;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 0;
+      flex-shrink: 0;
+    }
+
+    .sidebar .brand {
+      padding: 0 1.25rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #58a6ff;
+      border-bottom: 1px solid #30363d;
+      margin-bottom: 1rem;
+    }
+
+    .sidebar .brand span { display: block; font-size: 0.7rem; color: #8b949e; font-weight: 400; margin-top: 0.2rem; }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.65rem 1.25rem;
+      color: #8b949e;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      background: #21262d;
+      color: #e6edf3;
+    }
+
+    .sidebar .logout {
+      margin-top: auto;
+      border-top: 1px solid #30363d;
+      padding-top: 1rem;
+    }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      padding: 1rem 2rem;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .topbar h1 { font-size: 1.2rem; font-weight: 600; }
+    .topbar .user { font-size: 0.85rem; color: #8b949e; }
+
+    .content { padding: 2rem; flex: 1; }
+
+    /* ── Cards ── */
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #8b949e;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Stats grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .stat-card .value { font-size: 2.2rem; font-weight: 700; color: #58a6ff; }
+    .stat-card .label { font-size: 0.8rem; color: #8b949e; margin-top: 0.3rem; }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      background: #21262d;
+      color: #8b949e;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #30363d;
+    }
+
+    tbody tr { border-bottom: 1px solid #21262d; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #1c2128; }
+    tbody td { padding: 0.75rem 1rem; vertical-align: middle; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-available   { background: #1a4731; color: #3fb950; }
+    .badge-in_use      { background: #3d1f00; color: #f0883e; }
+    .badge-maintenance { background: #3b2300; color: #e3b341; }
+    .badge-fault       { background: #3d0a0a; color: #f85149; }
+    .badge-active      { background: #1a4731; color: #3fb950; }
+    .badge-completed   { background: #21262d; color: #8b949e; }
+    .badge-cancelled   { background: #3d0a0a; color: #f85149; }
+    .badge-pending     { background: #3b2300; color: #e3b341; }
+    .badge-confirmed   { background: #3d0a0a; color: #f85149; }
+    .badge-dismissed   { background: #21262d; color: #8b949e; }
+    .badge-user        { background: #1f3a5f; color: #58a6ff; }
+    .badge-security    { background: #3b2300; color: #e3b341; }
+    .badge-admin       { background: #3d0a0a; color: #f85149; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-block;
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #238636; color: #fff; }
+    .btn-danger  { background: #b91c1c; color: #fff; }
+    .btn-warning { background: #9a6700; color: #fff; }
+    .btn-blue    { background: #1f6feb; color: #fff; }
+
+    /* ── Forms ── */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; color: #8b949e; margin-bottom: 0.35rem; }
+
+    input[type=text], input[type=email], input[type=password],
+    select, textarea {
+      width: 100%;
+      padding: 0.55rem 0.8rem;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #e6edf3;
+      font-size: 0.9rem;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #58a6ff;
+    }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .alert-error   { background: #3d0a0a; color: #f85149; border: 1px solid #f85149; }
+    .alert-success { background: #1a4731; color: #3fb950; border: 1px solid #3fb950; }
+    .fault-color { color: #f85149; }
+    .ok-color    { color: #3fb950; } 
+  </style>
+</head>
+<body>
+
+{% if session.get('role') == 'admin' %}
+<nav class="sidebar">
+  <div class="brand">
+    🏛 Master Pi
+    <span>Admin Panel</span>
+  </div>
+  <a href="/dashboard"  {% if request.path == '/dashboard'  %}class="active"{% endif %}>📊 Dashboard</a>
+  <a href="/users"      {% if '/users'    in request.path   %}class="active"{% endif %}>👥 Users</a>
+  <a href="/rooms"      {% if '/rooms'    in request.path   %}class="active"{% endif %}>🚪 Rooms</a>
+  <a href="/bookings"   {% if '/bookings' in request.path   %}class="active"{% endif %}>📅 Bookings</a>
+  <a href="/logs"       {% if request.path == '/logs'       %}class="active"{% endif %}>📋 Action Logs</a>
+  <a href="/faults"     {% if '/faults'   in request.path   %}class="active"{% endif %}>⚠️  Fault Reports</a>
+  <a href="/reports"    {% if '/reports'  in request.path   %}class="active"{% endif %}>📈 Reports</a>
+  <a href="/health"     {% if '/health'   in request.path   %}class="active"{% endif %}>🖥 System Health</a>
+  <div class="logout">
+    <a href="/logout">🚪 Logout</a>
+  </div>
+</nav>
+{% endif %}
+
+<div class="main">
+  {% if session.get('role') == 'admin' %}
+  <div class="topbar">
+    <h1>{% block heading %}Admin{% endblock %}</h1>
+    <span class="user">👤 {{ session.get('full_name', 'Admin') }}</span>
+  </div>
+  {% endif %}
+
+  <div class="content">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+</body>
+</html>

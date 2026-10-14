@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Action Logs{% endblock %}
+{% block heading %}Action Logs{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>System Action Logs (latest 100)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Detail</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="color:#8b949e;">{{ log.id }}</td>
+          <td>
+            {% if log.full_name %}
+              {{ log.full_name }}
+              <div style="font-size:0.75rem; color:#8b949e;">{{ log.university_id }}</div>
+            {% else %}
+              <span style="color:#484f58;">—</span>
+            {% endif %}
+          </td>
+          <td><code style="color:#58a6ff; font-size:0.8rem;">{{ log.action }}</code></td>
+          <td style="color:#8b949e; font-size:0.85rem;">{{ log.detail or '—' }}</td>
+          <td style="color:#8b949e; font-size:0.8rem;">{{ log.logged_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="color:#8b949e; text-align:center; padding:2rem;">No logs found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

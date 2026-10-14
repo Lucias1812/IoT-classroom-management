@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block heading %}Reports{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:540px;">
+  <h2>Usage Report Generation</h2>
+  <p style="color:#8b949e; font-size:0.875rem; margin-bottom:1.5rem;">
+    Generates a room booking frequency chart from live database data and saves it as
+    <code style="color:#58a6ff;">report.png</code>.
+  </p>
+
+  {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+  {% endif %}
+
+  {% if report_generated %}
+    <div class="alert alert-success" style="margin-bottom:1.25rem;">
+      ✅ Report generated successfully.
+    </div>
+    <a href="/reports/download" class="btn btn-primary">⬇ Download report.png</a>
+    <hr style="border-color:#30363d; margin:1.5rem 0;"/>
+  {% endif %}
+
+  <form method="POST" action="/reports/generate">
+    <button type="submit" class="btn btn-blue">Generate Report Now</button>
+  </form>
+</div>
+{% endblock %}

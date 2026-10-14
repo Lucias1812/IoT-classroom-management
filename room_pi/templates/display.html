@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="refresh" content="10" />
+  <title>Room {{ room.room_code if room else room_id }} Display</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 2rem;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+    }
+
+    header h1 { font-size: 1.6rem; font-weight: 700; }
+    header .clock { font-size: 1.1rem; color: #8b949e; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-available   { background: #1a4731; color: #3fb950; border: 1px solid #3fb950; }
+    .badge-in_use      { background: #3d1f00; color: #f0883e; border: 1px solid #f0883e; }
+    .badge-maintenance { background: #3b2300; color: #e3b341; border: 1px solid #e3b341; }
+    .badge-fault       { background: #3d0a0a; color: #f85149; border: 1px solid #f85149; }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 1.5rem;
+      padding: 1.5rem 2rem;
+    }
+
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #8b949e;
+      margin-bottom: 1rem;
+    }
+
+    /* Status card spans full width */
+    .status-card {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .status-card .room-name  { font-size: 2rem; font-weight: 700; }
+    .status-card .room-meta  { color: #8b949e; font-size: 0.9rem; margin-top: 0.3rem; }
+    .status-card .status-right { text-align: right; }
+    .status-card .status-label { font-size: 0.8rem; color: #8b949e; margin-bottom: 0.4rem; }
+
+    /* Sensor card */
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .sensor-item { text-align: center; }
+    .sensor-item .value { font-size: 2rem; font-weight: 700; color: #58a6ff; }
+    .sensor-item .unit  { font-size: 0.8rem; color: #8b949e; }
+    .sensor-item .label { font-size: 0.75rem; color: #8b949e; margin-top: 0.2rem; }
+    .sensor-item .na    { font-size: 1.2rem; color: #484f58; }
+
+    /* Bookings card */
+    .bookings-card { overflow: hidden; }
+    .booking-list  { list-style: none; }
+
+    .booking-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #21262d;
+    }
+
+    .booking-item:last-child { border-bottom: none; }
+
+    .booking-time {
+      min-width: 120px;
+      font-size: 0.85rem;
+      color: #8b949e;
+      white-space: nowrap;
+    }
+
+    .booking-info .user { font-weight: 600; font-size: 0.95rem; }
+    .no-bookings { color: #8b949e; font-size: 0.9rem; padding: 1rem 0; }
+
+    /* Error banner */
+    .error-banner {
+      grid-column: 1 / -1;
+      background: #3d0a0a;
+      border: 1px solid #f85149;
+      border-radius: 10px;
+      padding: 1.5rem;
+      color: #f85149;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    /* Nav links */
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+      padding: 0.75rem 2rem;
+      background: #161b22;
+      border-top: 1px solid #21262d;
+    }
+
+    .nav-links a {
+      color: #58a6ff;
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+
+    .nav-links a:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      padding: 0.75rem;
+      font-size: 0.75rem;
+      color: #484f58;
+      border-top: 1px solid #21262d;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🏛 Classroom Display</h1>
+  <span class="clock" id="clock">--:--:--</span>
+</header>
+
+<main>
+  {% if error %}
+    <div class="error-banner">⚠️ {{ error }}</div>
+
+  {% else %}
+    <!-- Status Card -->
+    <div class="card status-card">
+      <div>
+        <div class="room-name">Room {{ room.room_code }}</div>
+        <div class="room-meta">{{ room.building }} &nbsp;·&nbsp; Capacity: {{ room.capacity }}</div>
+      </div>
+      <div class="status-right">
+        <div class="status-label">Current Status</div>
+        <span class="badge badge-{{ room.status }}">
+          {% if room.status == 'in_use' %}In Use
+          {% elif room.status == 'available' %}Available
+          {% elif room.status == 'maintenance' %}Maintenance
+          {% elif room.status == 'fault' %}⚠ Fault
+          {% else %}{{ room.status }}{% endif %}
+        </span>
+      </div>
+    </div>
+
+    <!-- Sensor Card -->
+    <div class="card">
+      <h2>Environmental Readings</h2>
+      <div class="sensor-grid">
+        <div class="sensor-item">
+          {% if sensor.temperature is not none %}
+            <div class="value">{{ sensor.temperature }}</div>
+            <div class="unit">°C</div>
+          {% else %}
+            <div class="na">—</div>
+          {% endif %}
+          <div class="label">Temperature</div>
+        </div>
+        <div class="sensor-item">
+          {% if sensor.humidity is not none %}
+            <div class="value">{{ sensor.humidity }}</div>
+            <div class="unit">%</div>
+          {% else %}
+            <div class="na">—</div>
+          {% endif %}
+          <div class="label">Humidity</div>
+        </div>
+        <div class="sensor-item">
+          {% if sensor.pressure is not none %}
+            <div class="value">{{ sensor.pressure }}</div>
+            <div class="unit">hPa</div>
+          {% else %}
+            <div class="na">—</div>
+          {% endif %}
+          <div class="label">Pressure</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bookings Card -->
+    <div class="card bookings-card">
+      <h2>Today's Schedule</h2>
+      {% if bookings %}
+        <ul class="booking-list">
+          {% for b in bookings %}
+            <li class="booking-item">
+              <span class="booking-time">{{ b.start_time }} – {{ b.end_time }}</span>
+              <div class="booking-info">
+                <div class="user">{{ b.user_name }}</div>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="no-bookings">No bookings scheduled for today.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+</main>
+
+<div class="nav-links">
+  <a href="/verify_token">🔑 Verify Access Token</a>
+  <a href="/report_fault">⚠️ Report Fault</a>
+</div>
+
+<footer>
+  Auto-refreshes every 10 seconds &nbsp;|&nbsp; Room ID: {{ room_id }}
+</footer>
+
+<script>
+  function tick() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString();
+  }
+  tick();
+  setInterval(tick, 1000);
+</script>
+
+</body>
+</html>

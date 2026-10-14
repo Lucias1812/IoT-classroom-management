@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Bookings{% endblock %}
+{% block heading %}Bookings{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>All Bookings (latest 100)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>User</th>
+          <th>Room</th>
+          <th>Date</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Status</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td style="color:#8b949e;">{{ b.id }}</td>
+          <td>
+            {{ b.user_name }}
+            <div style="font-size:0.75rem; color:#8b949e;">{{ b.university_id }}</div>
+          </td>
+          <td><strong>{{ b.room_code }}</strong></td>
+          <td>{{ b.date }}</td>
+          <td>{{ b.start_time }}</td>
+          <td>{{ b.end_time }}</td>
+          <td><span class="badge badge-{{ b.status }}">{{ b.status }}</span></td>
+          <td style="color:#8b949e; font-size:0.8rem;">{{ b.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" style="color:#8b949e; text-align:center; padding:2rem;">No bookings found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

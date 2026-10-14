@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Fault Reports{% endblock %}
+{% block heading %}Fault Report{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Fault Reports</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Room</th>
+          <th>Reported By</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Reported At</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fault in faults %}
+        <tr>
+          <td style="color:#8b949e;">{{ fault.id }}</td>
+          <td><strong>{{ fault.room_code }}</strong></td>
+          <td>{{ fault.reported_by }}</td>
+          <td style="color:#8b949e; font-size:0.85rem; max-width:260px;">{{ fault.description }}</td>
+          <td><span class="badge badge-{{ fault.status }}">{{ fault.status }}</span></td>
+          <td style="color:#8b949e; font-size:0.8rem;">{{ fault.created_at }}</td>
+          <td>
+            {% if fault.status == 'pending' %}
+            <form method="POST" action="/faults/{{ fault.id }}/review" style="min-width:260px;">
+              <input type="text" name="announcement"
+                     placeholder="Announcement (optional)"
+                     style="margin-bottom:0.4rem; font-size:0.8rem; padding:0.35rem 0.5rem;"/>
+              <div style="display:flex; gap:0.4rem;">
+                <button type="submit" name="decision" value="confirmed"
+                        class="btn btn-danger"
+                        onclick="return confirm('Confirm fault and broadcast announcement?')">
+                  Confirm Fault
+                </button>
+                <button type="submit" name="decision" value="dismissed"
+                        class="btn" style="background:#21262d; color:#e6edf3;">
+                  Dismiss
+                </button>
+              </div>
+            </form>
+            {% else %}
+              <span style="color:#484f58; font-size:0.8rem;">{{ fault.status }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="color:#8b949e; text-align:center; padding:2rem;">No fault reports found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

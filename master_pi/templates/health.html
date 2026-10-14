@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block title %}System Health{% endblock %}
+{% block heading %}System Health{% endblock %}
+
+{% block content %}
+
+<style>
+  .health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .room-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .room-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .room-card.online::before  { background: #3fb950; }
+  .room-card.stale::before   { background: #e3b341; }
+  .room-card.offline::before { background: #f85149; }
+
+  .room-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .room-code { font-size: 1.1rem; font-weight: 700; }
+  .room-building { font-size: 0.75rem; color: #8b949e; margin-top: 0.15rem; }
+
+  .pi-status {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+  }
+
+  .pi-status .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .pi-status.online  { background: #1a4731; color: #3fb950; }
+  .pi-status.online .dot  { background: #3fb950; box-shadow: 0 0 4px #3fb950; animation: pulse 2s infinite; }
+  .pi-status.stale   { background: #3b2300; color: #e3b341; }
+  .pi-status.stale .dot   { background: #e3b341; }
+  .pi-status.offline { background: #3d0a0a; color: #f85149; }
+  .pi-status.offline .dot { background: #f85149; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  .sensor-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #21262d;
+    font-size: 0.85rem;
+  }
+
+  .sensor-row:last-child { border-bottom: none; }
+
+  .sensor-label { color: #8b949e; }
+
+  .sensor-value { font-weight: 600; color: #58a6ff; }
+  .sensor-value.na { color: #484f58; font-weight: 400; }
+
+  .last-seen {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: #484f58;
+  }
+
+  .last-seen span { color: #8b949e; }
+
+  /* Summary bar */
+  .summary-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .summary-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .summary-pill .count { font-weight: 700; font-size: 1.1rem; }
+  .summary-pill.green .count { color: #3fb950; }
+  .summary-pill.yellow .count { color: #e3b341; }
+  .summary-pill.red .count    { color: #f85149; }
+
+  .refresh-note {
+    font-size: 0.75rem;
+    color: #484f58;
+    margin-bottom: 1.25rem;
+  }
+
+  .refresh-note span { color: #8b949e; }
+</style>
+
+<!-- Auto refresh every 15 seconds -->
+<meta http-equiv="refresh" content="15" />
+
+<p class="refresh-note">Auto-refreshes every 15 seconds &nbsp;·&nbsp; Last loaded: <span id="loaded-at">--:--:--</span></p>
+
+<!-- Summary pills -->
+<div class="summary-bar">
+  <div class="summary-pill green">
+    <div class="count">{{ summary.online }}</div>
+    <div>Room Pi Online</div>
+  </div>
+  <div class="summary-pill yellow">
+    <div class="count">{{ summary.stale }}</div>
+    <div>Stale (&gt;2 min)</div>
+  </div>
+  <div class="summary-pill red">
+    <div class="count">{{ summary.offline }}</div>
+    <div>No Data</div>
+  </div>
+  <div class="summary-pill">
+    <div class="count" style="color:#e6edf3;">{{ summary.total }}</div>
+    <div>Total Rooms</div>
+  </div>
+</div>
+
+<!-- Room cards -->
+<div class="health-grid">
+  {% for room in rooms %}
+    {% set age = room.age_seconds %}
+    {% if age is none %}
+      {% set connectivity = "offline" %}
+      {% set status_label = "No Data" %}
+    {% elif age <= 120 %}
+      {% set connectivity = "online" %}
+      {% set status_label = "Online" %}
+    {% else %}
+      {% set connectivity = "stale" %}
+      {% set status_label = "Stale" %}
+    {% endif %}
+
+    <div class="room-card {{ connectivity }}">
+      <div class="room-card-header">
+        <div>
+          <div class="room-code">{{ room.room_code }}</div>
+          <div class="room-building">{{ room.building }}</div>
+        </div>
+        <div class="pi-status {{ connectivity }}">
+          <div class="dot"></div>
+          {{ status_label }}
+        </div>
+      </div>
+
+      <div class="sensor-row">
+        <span class="sensor-label">🌡 Temperature</span>
+        {% if room.temperature is not none %}
+          <span class="sensor-value">{{ room.temperature }}°C</span>
+        {% else %}
+          <span class="sensor-value na">—</span>
+        {% endif %}
+      </div>
+      <div class="sensor-row">
+        <span class="sensor-label">💧 Humidity</span>
+        {% if room.humidity is not none %}
+          <span class="sensor-value">{{ room.humidity }}%</span>
+        {% else %}
+          <span class="sensor-value na">—</span>
+        {% endif %}
+      </div>
+      <div class="sensor-row">
+        <span class="sensor-label">🔵 Pressure</span>
+        {% if room.pressure is not none %}
+          <span class="sensor-value">{{ room.pressure }} hPa</span>
+        {% else %}
+          <span class="sensor-value na">—</span>
+        {% endif %}
+      </div>
+      <div class="sensor-row">
+        <span class="sensor-label">🚪 Room Status</span>
+        <span class="badge badge-{{ room.status }}">{{ room.status }}</span>
+      </div>
+
+      <div class="last-seen">
+        {% if room.last_seen %}
+          Last reading: <span>{{ room.last_seen }}</span>
+          {% if age is not none %}
+            ({% if age < 60 %}{{ age }}s ago{% else %}{{ (age // 60)|int }}m ago{% endif %})
+          {% endif %}
+        {% else %}
+          Last reading: <span>Never received</span>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div style="color:#8b949e; padding:2rem;">No rooms found in database.</div>
+  {% endfor %}
+</div>
+
+<script>
+  document.getElementById('loaded-at').textContent = new Date().toLocaleTimeString();
+</script>
+
+{% endblock %}

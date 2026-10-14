@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Room Access | Room {{ room_id }}</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      margin-bottom: 0.25rem;
+    }
+
+    p.sub {
+      color: #8b949e;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .layout {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 760px;
+    }
+
+    /* ---- QR Panel ---- */
+    .qr-panel {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .qr-panel h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #8b949e;
+    }
+
+    /* White background needed for QR readability */
+    #qrcode {
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-hint {
+      font-size: 0.78rem;
+      color: #8b949e;
+      text-align: center;
+      max-width: 180px;
+      line-height: 1.5;
+    }
+
+    /* ---- Form Panel ---- */
+    .form-panel {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 1.75rem;
+      flex: 1;
+      min-width: 240px;
+      max-width: 340px;
+    }
+
+    .form-panel h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #8b949e;
+      margin-bottom: 1rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #e6edf3;
+      font-size: 0.95rem;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #58a6ff;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.55rem 1.2rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn-primary { background: #238636; color: #fff; width: 100%; }
+    .btn-primary:hover { background: #2ea043; }
+    .btn-back    { background: #21262d; color: #e6edf3; display: block; text-align: center; margin-top: 0.5rem; }
+    .btn-back:hover { background: #30363d; }
+
+    /* ---- Result banners ---- */
+    .alert {
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .alert-success {
+      background: #1a4731;
+      color: #3fb950;
+      border: 1px solid #3fb950;
+    }
+    .alert-error {
+      background: #3d0a0a;
+      color: #f85149;
+      border: 1px solid #f85149;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #484f58;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0.5rem 0;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #21262d;
+    }
+  </style>
+</head>
+<body>
+
+  <div style="text-align:center">
+    <h2>🔑 Room Access Verification</h2>
+    <p class="sub">Room {{ room_id }} &nbsp;·&nbsp; Scan QR or enter token manually</p>
+  </div>
+
+  <div class="layout">
+
+    <!-- QR Code Panel -->
+    <div class="qr-panel">
+      <h3>📱 Scan to Open on Phone</h3>
+      <div id="qrcode"></div>
+      <p class="qr-hint">
+        Scan this QR code with your phone camera to open the token entry form directly.
+      </p>
+    </div>
+
+    <!-- Manual Entry Panel -->
+    <div class="form-panel">
+      <h3>⌨️ Manual Token Entry</h3>
+
+      {% if result %}
+        {% if result.granted %}
+          <div class="alert alert-success">
+            ✅ Access Granted<br>
+            <strong>{{ result.user }}</strong><br>
+            Session ends at <strong>{{ result.end_time }}</strong>
+          </div>
+          <a href="/display" class="btn btn-back">← Back to Display</a>
+        {% else %}
+          <div class="alert alert-error">
+            ❌ {{ result.message }}
+          </div>
+        {% endif %}
+      {% endif %}
+
+      {% if not result or not result.granted %}
+        <form method="POST">
+          <input
+            type="text"
+            name="token"
+            placeholder="Enter your access token"
+            value="{{ request.args.get('token', '') }}"
+            autocomplete="off"
+            required
+          />
+          <button type="submit" class="btn btn-primary">Verify Access</button>
+        </form>
+        <div class="divider">or</div>
+        <a href="/display" class="btn btn-back">← Back to Display</a>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <script>
+    // Build the URL this Room Pi is reachable at, pointing to the verify page
+    const roomUrl = window.location.origin + "/verify_token";
+
+    new QRCode(document.getElementById("qrcode"), {
+      text: roomUrl,
+      width: 180,
+      height: 180,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  </script>
+
+</body>
+</html>

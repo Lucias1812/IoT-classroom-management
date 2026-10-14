@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}My Bookings{% endblock %}
+{% block heading %}My Bookings{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Your Bookings</h2>
+  {% if bookings %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Room</th>
+          <th>Date</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Status</th>
+          <th>Token</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td><strong>{{ b.room_code }}</strong></td>
+          <td>{{ b.date }}</td>
+          <td>{{ b.start_time }}</td>
+          <td>{{ b.end_time }}</td>
+          <td><span class="badge badge-{{ b.status }}">{{ b.status }}</span></td>
+          <td>
+            {% if b.token %}
+              <code style="color:#58a6ff; font-size:0.75rem;">{{ b.token }}</code>
+            {% else %}
+              <span style="color:#484f58;">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if b.status == 'active' %}
+              <a href="/checkin/{{ b.id }}"  class="btn btn-primary" style="margin-right:0.3rem;">Check In</a>
+              <a href="/checkout/{{ b.id }}" class="btn btn-blue"    style="margin-right:0.3rem;">Check Out</a>
+              <a href="/cancel_booking/{{ b.id }}"
+                 class="btn btn-danger"
+                 onclick="return confirm('Cancel this booking?')">Cancel</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p style="color:#8b949e;">No bookings found. <a href="/search" style="color:#58a6ff;">Book a room</a></p>
+  {% endif %}
+</div>
+{% endblock %}

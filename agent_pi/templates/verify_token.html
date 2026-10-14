@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Verify Token{% endblock %}
+{% block heading %}Verify Access Token{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:420px;">
+  <h2>Room Access</h2>
+  <form method="POST">
+    <div class="form-group">
+      <label>Access Token</label>
+      <input type="text" name="token" placeholder="Enter your booking token" required/>
+    </div>
+    <button type="submit" class="btn btn-primary">Verify Token</button>
+  </form>
+</div>
+{% endblock %}

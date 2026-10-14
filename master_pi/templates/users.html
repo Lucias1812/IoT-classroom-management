@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block heading %}Users{% endblock %}
+
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+  <div></div>
+  <a href="/users/create" class="btn btn-primary">+ Create Security Staff</a>
+</div>
+
+<div class="card">
+  <h2>All Accounts</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>University ID</th>
+          <th>Full Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>{{ user.university_id }}</td>
+          <td>{{ user.full_name }}</td>
+          <td style="color:#8b949e;">{{ user.email }}</td>
+          <td><span class="badge badge-{{ user.role }}">{{ user.role }}</span></td>
+          <td style="color:#8b949e; font-size:0.8rem;">{{ user.created_at }}</td>
+          <td>
+            <a href="/users/{{ user.id }}/edit" class="btn btn-blue">Edit</a>
+            {% if user.role != 'admin' %}
+            <form method="POST" action="/users/{{ user.id }}/delete"
+                  style="display:inline;"
+                  onsubmit="return confirm('Delete {{ user.full_name }}?')">
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" style="color:#8b949e; text-align:center; padding:2rem;">No users found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="value">{{ stats.get('users', 0) }}</div>
+    <div class="label">Registered Users</div>
+  </div>
+  <div class="stat-card">
+    <div class="value">{{ stats.get('active_bookings', 0) }}</div>
+    <div class="label">Active Bookings</div>
+  </div>
+  <div class="stat-card">
+    <div class="value {% if stats.get('pending_faults', 0) > 0 %}fault-color{% else %}ok-color{% endif %}">
+      {{ stats.get('pending_faults', 0) }}
+    </div>
+    <div class="label">Pending Faults</div>
+  </div>
+  <div class="stat-card">
+    <div class="value">{{ stats.get('rooms', 0) }}</div>
+    <div class="label">Total Rooms</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Quick Actions</h2>
+  <div style="display:flex; gap:0.75rem; flex-wrap:wrap; padding-top:0.5rem;">
+    <a href="/users/create" class="btn btn-primary">+ New Security Staff</a>
+    <a href="/faults"       class="btn btn-warning">⚠️ Review Fault Reports</a>
+    <a href="/rooms"        class="btn btn-blue">🚪 Manage Rooms</a>
+    <a href="/reports"      class="btn btn-blue">📈 Generate Report</a>
+  </div>
+</div>
+
+{% if stats.get('pending_faults', 0) > 0 %}
+<div class="alert alert-error" style="display:flex; align-items:center; justify-content:space-between;">
+  <span>⚠️ There are <strong>{{ stats['pending_faults'] }}</strong> unreviewed fault report(s) requiring attention.</span>
+  <a href="/faults" class="btn btn-danger" style="margin-left:1rem;">Review Now</a>
+</div>
+{% endif %}
+{% endblock %}

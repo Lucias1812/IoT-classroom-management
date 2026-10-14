@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Welcome back</h2>
+  <p style="font-size:1.5rem; font-weight:700; margin-bottom:1.5rem;">👋 {{ full_name }}</p>
+  <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+    <a href="/search"     class="btn btn-primary">🔍 Search & Book Rooms</a>
+    <a href="/mybookings" class="btn btn-blue">📅 My Bookings</a>
+    <a href="/fault"      class="btn" style="background:#9a6700; color:#fff;">⚠️ Report a Fault</a>
+  </div>
+</div>
+
+{% if alerts %}
+<div class="card">
+  <h2>📢 Recent Announcements</h2>
+  {% for alert in alerts|reverse %}
+    <div style="padding:0.6rem 0; border-bottom:1px solid #21262d; font-size:0.875rem;">
+      <span style="color:#8b949e; font-size:0.75rem;">{{ alert.topic }}</span><br/>
+      {{ alert.message }}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

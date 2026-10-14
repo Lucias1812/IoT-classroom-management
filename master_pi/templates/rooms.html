@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Rooms{% endblock %}
+{% block heading %}Rooms{% endblock %}
+
+
+{% block content %}
+<div class="card">
+  <h2>All Rooms</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Room Code</th>
+          <th>Building</th>
+          <th>Capacity</th>
+          <th>Status</th>
+          <th>Last Updated</th>
+          <th>Change Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for room in rooms %}
+        <tr>
+          <td><strong>{{ room.room_code }}</strong></td>
+          <td>{{ room.building }}</td>
+          <td>{{ room.capacity }}</td>
+          <td><span class="badge badge-{{ room.status }}">{{ room.status }}</span></td>
+          <td style="color:#8b949e; font-size:0.8rem;">{{ room.updated_at }}</td>
+          <td>
+            <form method="POST" action="/rooms/{{ room.id }}/status"
+                  style="display:flex; gap:0.5rem; align-items:center;">
+              <select name="status" style="width:auto; padding:0.35rem 0.5rem; font-size:0.8rem;">
+                <option value="available"   {% if room.status == 'available'   %}selected{% endif %}>Available</option>
+                <option value="in_use"      {% if room.status == 'in_use'      %}selected{% endif %}>In Use</option>
+                <option value="maintenance" {% if room.status == 'maintenance' %}selected{% endif %}>Maintenance</option>
+                <option value="fault"       {% if room.status == 'fault'       %}selected{% endif %}>Fault</option>
+              </select>
+              <button type="submit" class="btn btn-warning" style="padding:0.35rem 0.7rem;">Update</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" style="color:#8b949e; text-align:center; padding:2rem;">No rooms found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
